@@ -17,7 +17,6 @@ BaseApplication::BaseApplication(Context* context) :
 
     context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
-    context_->RegisterFactory<Message>();
     context_->RegisterFactory<Notifications>();
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
@@ -76,7 +75,6 @@ void BaseApplication::Start()
 
     context_->RegisterSubsystem(new LevelManager(context_));
     context_->RegisterSubsystem(new WindowManager(context_));
-    context_->RegisterSubsystem(new Message(context_));
     context_->RegisterSubsystem(new Achievements(context_));
 	context_->RegisterSubsystem(new ModLoader(context_));
     context_->RegisterSubsystem(new AudioManager(context_));
@@ -98,14 +96,12 @@ void BaseApplication::Start()
 
     ApplyGraphicsSettings();
 
+    // Initialize the first level from the config file
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     LoadTranslationFiles();
-
-    auto* localization = GetSubsystem<Localization>();
-    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }
 
 void BaseApplication::Stop()
@@ -309,4 +305,7 @@ void BaseApplication::LoadTranslationFiles()
             URHO3D_LOGERROR("Translation file '" + filepath + "' not found!");
         }
     }
+
+    // Finally set the application language
+    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }

@@ -25,9 +25,11 @@ Level::~Level()
 void Level::Init()
 {
     if (!scene_) {
+        auto localization = GetSubsystem<Localization>();
         // There is no scene, get back to the main menu
         VariantMap& eventData = GetEventDataMap();
         eventData["Name"] = "MainMenu";
+        eventData["Message"] = localization->Get("NO_SCENE");
         SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
         return;
@@ -64,7 +66,9 @@ void Level::Init()
     }
 
     Node* movableNode = scene_->GetChild("PathNode");
-    _path = movableNode->GetComponent<SplinePath>();
+    if (movableNode) {
+        _path = movableNode->GetComponent<SplinePath>();
+    }
 }
 
 void Level::StartAudio()
@@ -238,6 +242,8 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
         if ((*it).second_->GetPosition().y_ < -10) {
             (*it).second_->SetPosition(Vector3(0, 1, 0));
+            (*it).second_->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
+            (*it).second_->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
             SendEvent("FallOffTheMap");
         }
 
@@ -343,6 +349,7 @@ Node* Level::CreateControllableObject()
     body->SetLinearDamping(0.8f);
     body->SetAngularDamping(0.8f);
     body->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES);
+    body->SetCollisionEventMode(CollisionEventMode::COLLISION_ALWAYS);
 
     auto* shape = ballNode->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);

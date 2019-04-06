@@ -24,8 +24,6 @@ namespace Levels {
         // Disable achievement showing for this level
         GetSubsystem<Achievements>()->SetShowAchievements(false);
 
-        BaseLevel::Init();
-
         // Create the scene content
         CreateScene();
 
@@ -76,7 +74,7 @@ namespace Levels {
         CreateSingleLine("Special thanks to the creators", HEADER_SIZE);
         CreateSingleLine("of the Urho3D engine!", HEADER_SIZE);
 
-        _creditLengthInSeconds = _credits.Size() * 1.5;
+        _creditLengthInSeconds = _credits.Size() * 1.5 / GetSubsystem<UI>()->GetScale();
 
         SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
         SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));

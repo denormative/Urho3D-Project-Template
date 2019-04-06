@@ -9,7 +9,6 @@
 AchievementsWindow::AchievementsWindow(Context* context) :
     BaseWindow(context)
 {
-    Init();
 }
 
 AchievementsWindow::~AchievementsWindow()
@@ -47,7 +46,7 @@ void AchievementsWindow::Create()
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(500, 400);
+    _baseWindow->SetSize(550, 400);
     _baseWindow->BringToFront();
 
     // Create Window 'titlebar' container
@@ -91,7 +90,7 @@ void AchievementsWindow::Create()
     _listView->SetStyleAuto();
     _listView->SetMinHeight(_baseWindow->GetHeight() - 30 - 10);
     _listView->SetPosition(10, 30);
-    _listView->SetScrollBarsVisible(false, true);
+    //_listView->SetScrollBarsVisible(false, true);
 
 
     auto achievements = GetSubsystem<Achievements>()->GetAchievements();
@@ -118,7 +117,7 @@ UIElement* AchievementsWindow::CreateSingleLine()
     container->SetAlignment(HA_LEFT, VA_TOP);
     container->SetLayout(LM_HORIZONTAL, 20);
     container->SetPosition(20, top);
-    container->SetFixedWidth(_listView->GetWidth());
+    container->SetFixedWidth(_listView->GetWidth() - 20);
     container->SetMinHeight(20);
     _listView->AddItem(container);
 

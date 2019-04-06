@@ -15,7 +15,6 @@ static const int COLUMN_WIDTH = 250;
 SettingsWindow::SettingsWindow(Context* context) :
         BaseWindow(context)
 {
-    Init();
 }
 
 SettingsWindow::~SettingsWindow()
@@ -76,12 +75,6 @@ void SettingsWindow::Create()
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
 
-    _tabView = _baseWindow->CreateChild<UIElement>();
-    _tabView->SetAlignment(HA_LEFT, VA_TOP);
-    _tabView->SetPosition(0, 40);
-    _tabView->SetWidth(_baseWindow->GetWidth());
-    _tabView->SetHeight(_baseWindow->GetHeight());
-
     _tabs[CONTROLS] = CreateTabButton(localization->Get("CONTROLS"));
     SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(CONTROLS);
@@ -103,6 +96,13 @@ void SettingsWindow::Create()
         ChangeTab(GAME);
     });
 
+    _listView = _baseWindow->CreateChild<ListView>();
+    _listView->SetStyleAuto();
+    _listView->SetWidth(_baseWindow->GetWidth() - 20);
+    _listView->SetFixedHeight(_baseWindow->GetHeight() - 80);
+    _listView->SetPosition(10, 70);
+    //_listView->SetScrollBarsVisible(false, true);
+
     ChangeTab(CONTROLS);
 }
 
@@ -115,7 +115,7 @@ void SettingsWindow::SubscribeToEvents()
 void SettingsWindow::ChangeTab(SettingTabs tab)
 {
     _activeTab = tab;
-    _tabView->RemoveAllChildren();
+    _listView->RemoveAllItems();
     _tabElementCount = 0;
 
     switch (_activeTab) {
@@ -629,7 +629,13 @@ void SettingsWindow::CreateGameTab()
         GetSubsystem<ConfigManager>()->Set("engine", "Language", languages.At(selection));
         GetSubsystem<ConfigManager>()->Save(true);
 
-        //TODO - apply settings directly, reload view or just show the pop-up message?
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = localization->Get("RESTART_TO_APPLY");
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
     // Load mods
@@ -641,9 +647,19 @@ void SettingsWindow::CreateGameTab()
         bool enabled = eventData[P_STATE].GetBool();
         GetSubsystem<ConfigManager>()->Set("game", "LoadMods", enabled);
         GetSubsystem<ConfigManager>()->Save(true);
+
+        auto* localization = GetSubsystem<Localization>();
+
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = localization->Get("RESTART_TO_APPLY");
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
-    // Load mods
+    // Developer console
     CreateSingleLine();
     auto developerConsole = CreateCheckbox(localization->Get("DEVELOPER_CONSOLE"));
     developerConsole->SetChecked(GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true));
@@ -915,9 +931,10 @@ UIElement* SettingsWindow::CreateSingleLine()
     SharedPtr<UIElement> container(new UIElement(context_));
     container->SetAlignment(HA_LEFT, VA_TOP);
     container->SetLayout(LM_HORIZONTAL, 20);
-    container->SetPosition(10, 30 + _tabElementCount * 30);
-    container->SetWidth(_tabView->GetWidth());
-    _tabView->AddChild(container);
+    //container->SetPosition(10, 30 + _tabElementCount * 30);
+    container->SetFixedWidth(_listView->GetWidth() - 20);
+    container->SetFixedHeight(30);
+    _listView->AddItem(container);
 
     _activeLine = container;
 

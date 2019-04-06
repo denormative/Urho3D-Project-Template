@@ -22,8 +22,6 @@ void Loading::Init()
     // Disable achievement showing for this level
     GetSubsystem<Achievements>()->SetShowAchievements(false);
 
-    BaseLevel::Init();
-
     // Create the scene content
     CreateScene();
 
@@ -147,7 +145,6 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (progress >= 1.0f) {
         SendEvent("EndLoading");
         UnsubscribeFromEvent(E_UPDATE);
-        GetSubsystem<SceneManager>()->ResetProgress();
     }
 }
 
